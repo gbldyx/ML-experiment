@@ -74,12 +74,24 @@ def calc_feature_entropy(dataset, feature):
     return feature_entropy
 
 def build_tree(dataset):
-    labels = set(dataset[:, 0])
-    if len(labels) == 1:
+    labels = dataset[:, 0]
+    if len(set(labels)) == 1:
         return Tree(LEAF, label = labels.pop())
     
+    n_features = dataset.shape[1]
+    
+    if n_features == 0:
+        label_cnt = {}
+        for l in labels:
+            if l not in label_cnt.keys():
+                label_cnt[l] = 0
+            label_cnt[l] += 1
+        max_label = max(label_cnt, key=lambda k: label_cnt[k])
+        return Tree(LEAF, label=max_label)
+    
+    
     max_igr = 0
-    max_feature = 0
+    max_feature = 1
     for ftr in range(n_features):
         igr = calc_Shannon_entropy(dataset) - calc_feature_entropy(dataset, ftr)
         spin = calc_SplitInfo(dataset, ftr)
@@ -90,8 +102,13 @@ def build_tree(dataset):
             max_feature = ftr
             
     tree = Tree(INTER, feature=max_feature)
-    
-    
+    value_set = set(dataset[:, max_feature])
+    for value in value_set:
+        sub_set = split_dataset(dataset, max_feature, value)
+        sub_tree = build_tree(sub_set)
+        tree.add_tree(value, sub_tree)
+        
+    return tree
     
     
 
