@@ -1,18 +1,3 @@
-
-# coding: utf-8
-
-# In[5]:
-
-
-x = [0,1,3,4,65,3]
-for i in set(x):
-    print(type(i))
-#print(set(x))
-
-
-# In[11]:
-
-
 import numpy as np
 
 test_d = [[3,4],[3,5,6],[3,5],[8],[6,1],[1,3]]
@@ -56,24 +41,48 @@ def generate_ck(item_sets, k):
     return freq_sets
                 
 
-def apriori(dataset, min_support, max_items=None):
-    n_trans = len(dataset)
+def apriori(dataset, min_support, max_len=None):
+    #n_trans = len(dataset)
     #item_support = {}
-    c1 = set()
+    set_len = 2
+    item_set = set()
+    freq_set = []
+    supports = {}
     
     for tran in dataset:
         for item in tran:
             #item_set = set(item)
             if item not in c1:
-                c1.add(frozenset([item]))
+                item.add(frozenset([item]))
                 #item_support[item_set] = 0
             #item_support[item_set] += 1
     
-    fs, sp = freq_set_support(dataset, c1, min_support)
-    c2 = generate_ck(fs, 2)
+    c1, support1 = freq_set_support(dataset, c1, min_support)
+    freq_set.append(c1)
+    supports.update(support1)
+    
+    print(freq_set)
+    print(support1)
+    
+    if max_len == None:
+        max_len = float('inf')
+        
+    while set_len <= 3:
+        ci = generate_ck(freq_set[-1], set_len)
+        fs, sp = freq_set_support(dataset, ci, min_support)
+        
+        if fs:
+            freq_set.append(fs)
+            supports.update(sp)
+            set_len += 1
+        else:
+            break
+    #c2 = generate_ck(fs, 2)
     #print(sl)
     #print(sp)
-    print(c2)
+    #print(c2)
+    return freq_set, supports
 
-apriori(test_d, 0)
-
+fs, sp = apriori(test_d, 0)
+print(fs)
+print(sp)
